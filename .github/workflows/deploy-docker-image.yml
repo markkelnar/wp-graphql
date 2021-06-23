@@ -6,7 +6,7 @@ name: Deploy Docker Image
 on:
   push:
     branches:
-      - mark-test
+      - docker-tags
     tags:
       - 'v*'
 jobs:
@@ -30,8 +30,8 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: name/app
-        tags: |
-          type=semver,pattern={{raw}}
+          tags: |
+            type=semver,pattern={{raw}}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v1
