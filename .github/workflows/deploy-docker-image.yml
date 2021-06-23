@@ -1,11 +1,14 @@
 name: Deploy Docker Image
 
 # Note: testing image push process. On merge to develop branch, push the image.
-# TODO: Deploy when release is tagged. Add release version to image name.
+# Use 'develop' tag on merge to develop branch
+# On release/tag, use "v#.#.#' tag version number. Also push 'latest' image.
 on:
   push:
     branches:
-      - develop
+      - mark-test
+    tags:
+      - 'v*'
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
@@ -22,6 +25,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: name/app
+        tags: |
+          type=semver,pattern={{raw}}
+
       - name: Log in to the Container registry
         uses: docker/login-action@v1
         with:
@@ -34,7 +45,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/wp-graphql/wp-graphql:latest-wp${{ matrix.wordpress }}-php${{ matrix.php }}
+          tags: ghcr.io/markkelnar/wp-graphql:${{ steps.meta.outputs.tags }}-wp${{ matrix.wordpress }}-php${{ matrix.php }}
           file: docker/app.Dockerfile
           build-args: |
             PHP_VERSION=${{ matrix.php }}
