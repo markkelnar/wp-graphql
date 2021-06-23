@@ -25,13 +25,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v3
-        with:
-          images: name/app
-          tags: |
-            type=semver,pattern={{raw}}
+      - name: Get the version
+        id: vars
+        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
 
       - name: Log in to the Container registry
         uses: docker/login-action@v1
@@ -45,7 +41,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/markkelnar/wp-graphql:${{ steps.meta.outputs.tags }}-wp${{ matrix.wordpress }}-php${{ matrix.php }}
+          tags: ghcr.io/markkelnar/wp-graphql:${{ steps.vars.outputs.tag }}-wp${{ matrix.wordpress }}-php${{ matrix.php }}
           file: docker/app.Dockerfile
           build-args: |
             PHP_VERSION=${{ matrix.php }}
