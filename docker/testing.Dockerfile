@@ -4,8 +4,9 @@
 
 ARG WP_VERSION
 ARG PHP_VERSION
+ARG DOCKER_REGISTRY
 
-FROM wp-graphql:latest-wp${WP_VERSION}-php${PHP_VERSION}
+FROM ${DOCKER_REGISTRY:-}wp-graphql:latest-wp${WP_VERSION}-php${PHP_VERSION}
 
 LABEL author=jasonbahl
 LABEL author_uri=https://github.com/jasonbahl
@@ -20,7 +21,7 @@ RUN docker-php-ext-install pdo_mysql
 RUN apt-get install zip unzip -y \
     && pecl install pcov
 
-ENV COVERAGE=0
+ENV COVERAGE=
 ENV SUITES=${SUITES:-}
 
 # Install composer
@@ -36,11 +37,8 @@ ENV PATH "$PATH:~/.composer/vendor/bin"
 # Configure php
 RUN echo "date.timezone = UTC" >> /usr/local/etc/php/php.ini
 
-# Remove exec statement from base entrypoint script.
-RUN sed -i '$d' /usr/local/bin/app-entrypoint.sh
-
 # Set up entrypoint
-WORKDIR    /var/www/html/wp-content/plugins/wp-graphql
+WORKDIR    /var/www/html
 COPY       docker/testing.entrypoint.sh /usr/local/bin/testing-entrypoint.sh
 RUN        chmod 755 /usr/local/bin/testing-entrypoint.sh
 ENTRYPOINT ["testing-entrypoint.sh"]
